@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>第一证券</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;width:100%;background:#fff;font-family:'Inter',-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;overflow:hidden;}
+.app{display:flex;flex-direction:column;width:100%;height:100%;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);}
+
+.sb{height:44px;padding:12px 20px 0;display:flex;justify-content:space-between;align-items:flex-start;background:#fff;flex-shrink:0;}
+.sb-time{font-size:15px;font-weight:600;color:#000;letter-spacing:-0.3px;}
+.sb-right{display:flex;align-items:center;gap:6px;}
+.signal{display:flex;align-items:flex-end;gap:1.5px;height:11px;}
+.signal span{width:3px;background:#000;border-radius:0.5px;}
+.bat{width:25px;height:12px;border:1.5px solid #000;border-radius:2.5px;position:relative;display:flex;align-items:center;padding:1.5px;}
+.bat::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:2px;height:5px;background:#000;border-radius:0 1px 1px 0;}
+.bat-fill{height:100%;border-radius:1px;transition:width 0.3s,background 0.3s;}
+.bat-pct{font-size:12px;font-weight:500;color:#000;}
+
+.topbar{padding:6px 16px 4px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fff;}
+.acct-left{display:flex;align-items:center;gap:10px;}
+.hamburger{display:flex;flex-direction:column;gap:4px;cursor:pointer;}
+.hamburger span{width:20px;height:2px;background:#000;border-radius:1px;display:block;}
+.acct-num{font-size:17px;font-weight:600;color:#000;letter-spacing:-0.3px;}
+.topbar-icons{display:flex;gap:22px;align-items:center;}
+
+.total-wrap{padding:2px 16px 10px;background:#fff;flex-shrink:0;}
+.total-label{font-size:13px;color:#8c8c8c;margin-bottom:3px;}
+.total-row{display:flex;align-items:center;gap:6px;}
+.total-amt{font-size:30px;font-weight:700;color:#000;letter-spacing:-1px;font-variant-numeric:tabular-nums;}
+.chevron-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid #c8c8c8;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-left:2px;flex-shrink:0;background:#fff;}
+.day-row{font-size:13px;margin-top:3px;color:#8c8c8c;}
+.day-row.up{color:#00b050;}
+.day-row.dn{color:#d0021b;}
+
+.ae-panel{background:#f7f7f7;border-top:0.5px solid #e0e0e0;padding:12px 16px;flex-shrink:0;}
+.ae-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.ae-col label{font-size:11px;color:#888;display:block;margin-bottom:3px;}
+.ae-col input{width:100%;border:1px solid #ddd;border-radius:7px;padding:8px 9px;font-size:14px;color:#000;background:#fff;outline:none;font-family:inherit;}
+.ae-col input:focus{border-color:#000;}
+.ae-save{width:100%;padding:10px;background:#000;color:#fff;border:none;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+
+.col-hdr{display:grid;grid-template-columns:110px 1fr 110px;background:#f2f2f2;border-top:0.5px solid #e0e0e0;border-bottom:0.5px solid #e0e0e0;padding:7px 16px;flex-shrink:0;}
+.col-hdr span{font-size:12px;color:#8c8c8c;}
+.col-hdr .ch-a{color:#1a1a1a;font-weight:500;}
+.col-hdr span:nth-child(2){text-align:center;}
+.col-hdr span:last-child{text-align:right;}
+
+.slist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#fff;}
+.slist::-webkit-scrollbar{display:none;}
+.row-wrap{position:relative;overflow:hidden;border-bottom:0.5px solid #efefef;}
+.srow{display:grid;grid-template-columns:110px 1fr 110px;align-items:center;padding:12px 16px;cursor:pointer;background:#fff;position:relative;z-index:1;transition:transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94);user-select:none;}
+.del-reveal{position:absolute;right:0;top:0;bottom:0;width:80px;background:#d0021b;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:0;}
+.del-reveal span{color:#fff;font-size:14px;font-weight:600;}
+.sl-tick{font-size:16px;font-weight:600;color:#000;letter-spacing:-0.3px;}
+.sl-info{font-size:12px;color:#8c8c8c;margin-top:2px;font-variant-numeric:tabular-nums;}
+.sl-pnl{font-size:12px;margin-top:1px;font-variant-numeric:tabular-nums;}
+.sl-pnl.up{color:#00b050;}
+.sl-pnl.dn{color:#d0021b;}
+.sc{display:flex;justify-content:center;align-items:center;}
+.sr{text-align:right;}
+.sr-price{font-size:15px;font-weight:600;color:#000;font-variant-numeric:tabular-nums;letter-spacing:-0.3px;}
+.sr-chg{font-size:12px;font-variant-numeric:tabular-nums;margin-top:2px;}
+.sr-chg.up{color:#00b050;}
+.sr-chg.dn{color:#d0021b;}
+.sr-mkt{font-size:12px;color:#8c8c8c;margin-top:1px;font-variant-numeric:tabular-nums;}
+
+.empty{display:flex;flex-direction:column;align-items:center;padding:60px 20px 40px;}
+.empty-txt{font-size:15px;color:#b0b0b0;margin-bottom:22px;}
+.srch-btn{display:flex;align-items:center;gap:10px;padding:11px 28px;border:1.5px solid #d8d8d8;border-radius:10px;background:#fff;color:#555;font-size:15px;cursor:pointer;font-family:inherit;}
+
+.add-bar{padding:10px 16px;border-top:0.5px solid #efefef;flex-shrink:0;}
+.add-btn{width:100%;padding:10px;border:1.5px dashed #c8c8c8;border-radius:8px;background:none;font-size:14px;color:#888;cursor:pointer;font-family:inherit;}
+
+.bnav{display:flex;border-top:0.5px solid #d8d8d8;background:#fff;padding:8px 0 0;flex-shrink:0;}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding-bottom:6px;}
+.ni-lbl{font-size:10px;color:#8c8c8c;}
+.ni.act .ni-lbl{color:#000;font-weight:600;}
+
+/* ── sheet ── */
+.sheet-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:200;align-items:flex-end;justify-content:center;}
+.sheet-bg.show{display:flex;}
+.sheet{width:100%;background:#fff;border-radius:18px 18px 0 0;padding-bottom:env(safe-area-inset-bottom);animation:slideUp 0.28s ease;max-height:92vh;overflow-y:auto;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.sh-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:12px auto 0;}
+.sh-title{font-size:16px;font-weight:600;color:#000;padding:14px 16px 12px;border-bottom:0.5px solid #efefef;display:flex;justify-content:space-between;align-items:center;}
+.sh-title button{background:none;border:none;font-size:14px;color:#888;cursor:pointer;font-family:inherit;}
+.sh-body{padding:14px 16px 0;}
+
+/* live preview bar inside sheet */
+.live-preview{
+  background:#f7f7f7;border-radius:10px;padding:11px 14px;
+  margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;
+}
+.lp-item{text-align:center;}
+.lp-label{font-size:10px;color:#aaa;margin-bottom:3px;}
+.lp-val{font-size:13px;font-weight:600;color:#000;font-variant-numeric:tabular-nums;}
+.lp-val.up{color:#00b050;}
+.lp-val.dn{color:#d0021b;}
+
+.prow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.pf label{font-size:12px;color:#666;display:block;margin-bottom:4px;font-weight:500;}
+.pf input{width:100%;border:1px solid #e0e0e0;border-radius:8px;padding:11px 10px;font-size:15px;color:#000;background:#fff;outline:none;font-family:inherit;font-variant-numeric:tabular-nums;}
+.pf input:focus{border-color:#000;}
+.err-msg{font-size:12px;color:#d0021b;margin-bottom:8px;display:none;}
+.sh-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px;}
+.btn-ok{padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:inherit;background:#000;color:#fff;}
+.btn-cl{padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:inherit;background:#f0f0f0;color:#444;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="sb">
+    <span class="sb-time" id="sbTime">00:00</span>
+    <div class="sb-right">
+      <div class="signal">
+        <span style="height:4px"></span><span style="height:6px"></span>
+        <span style="height:9px"></span><span style="height:11px"></span>
+      </div>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+        <path d="M8 2.5C9.8 2.5 11.4 3.2 12.6 4.4L14 3C12.4 1.4 10.3 0.5 8 0.5C5.7 0.5 3.6 1.4 2 3L3.4 4.4C4.6 3.2 6.2 2.5 8 2.5Z" fill="#000"/>
+        <path d="M8 5.5C9.1 5.5 10.1 5.9 10.8 6.7L12.2 5.3C11.1 4.2 9.6 3.5 8 3.5C6.4 3.5 4.9 4.2 3.8 5.3L5.2 6.7C5.9 5.9 6.9 5.5 8 5.5Z" fill="#000"/>
+        <circle cx="8" cy="9.5" r="1.5" fill="#000"/>
+      </svg>
+      <div style="display:flex;align-items:center;gap:3px;">
+        <div class="bat"><div class="bat-fill" id="batFill"></div></div>
+        <span class="bat-pct" id="batPct">100</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <div class="acct-left">
+      <div class="hamburger"><span></span><span></span><span></span></div>
+      <span class="acct-num" id="acctNum">67770680</span>
+    </div>
+    <div class="topbar-icons">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style="cursor:pointer">
+        <path d="M11 2C11 2 5 5 5 11V16L3 18H19L17 16V11C17 5 11 2 11 2Z" stroke="#000" stroke-width="1.6" stroke-linejoin="round" fill="none"/>
+        <path d="M9 18C9 19.1 9.9 20 11 20C12.1 20 13 19.1 13 18" stroke="#000" stroke-width="1.6" fill="none"/>
+      </svg>
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style="cursor:pointer">
+        <circle cx="10" cy="10" r="6.5" stroke="#000" stroke-width="1.7"/>
+        <path d="M15 15L20 20" stroke="#000" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="total-wrap">
+    <div class="total-label">账户总值</div>
+    <div class="total-row">
+      <span class="total-amt" id="totalAmt">$0.00</span>
+      <div class="chevron-btn" onclick="toggleAE()">
+        <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+          <path d="M1 1.5L6 6.5L11 1.5" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="day-row" id="dayRow"></div>
+  </div>
+
+  <div id="aePanel" style="display:none">
+    <div class="ae-panel">
+      <div class="ae-grid">
+        <div class="ae-col"><label>账户总资金 ($)</label><input type="number" id="aeAmt" step="100" inputmode="decimal"></div>
+        <div class="ae-col"><label>账号</label><input type="text" id="aeNum"></div>
+      </div>
+      <div class="ae-grid">
+        <div class="ae-col"><label>电量显示 (%)</label><input type="number" id="aeBat" step="1" min="1" max="100" inputmode="numeric"></div>
+        <div class="ae-col" style="display:flex;align-items:flex-end;"><button class="ae-save" onclick="saveAE()">保存</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-hdr">
+    <span class="ch-a">代号 ∧</span>
+    <span>当日走势</span>
+    <span>价格 ›</span>
+  </div>
+
+  <div class="slist" id="slist"></div>
+
+  <div class="add-bar">
+    <button class="add-btn" onclick="openAdd()">＋ 添加持仓股票</button>
+  </div>
+
+  <nav class="bnav">
+    <div class="ni act">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="6" width="18" height="14" rx="2" stroke="#000" stroke-width="1.8" fill="none"/>
+        <path d="M3 10H21" stroke="#000" stroke-width="1.8"/>
+        <rect x="2" y="4" width="6" height="4" rx="1" fill="#000"/>
+        <rect x="16" y="4" width="6" height="4" rx="1" fill="#000"/>
+      </svg>
+      <span class="ni-lbl" style="color:#000;font-weight:600;">持仓</span>
+    </div>
+    <div class="ni">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2L14.4 8.8L21.6 9.2L16 13.6L17.9 21L12 17L6.1 21L8 13.6L2.4 9.2L9.6 8.8Z" stroke="#aaa" stroke-width="1.7" fill="none" stroke-linejoin="round"/>
+      </svg>
+      <span class="ni-lbl">自选股</span>
+    </div>
+    <div class="ni">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="#aaa" stroke-width="1.7" fill="none"/>
+        <circle cx="12" cy="12" r="3" stroke="#aaa" stroke-width="1.7" fill="none"/>
+        <path d="M12 3V6M12 18V21M3 12H6M18 12H21" stroke="#aaa" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+      <span class="ni-lbl">市场</span>
+    </div>
+    <div class="ni">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="4" y="3" width="16" height="18" rx="2" stroke="#aaa" stroke-width="1.7" fill="none"/>
+        <path d="M8 8H16M8 12H16M8 16H13" stroke="#aaa" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+      <span class="ni-lbl">订单现况</span>
+    </div>
+    <div class="ni">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="8" r="4" stroke="#aaa" stroke-width="1.7" fill="none"/>
+        <path d="M4 20C4 16.7 7.6 14 12 14C16.4 14 20 16.7 20 20" stroke="#aaa" stroke-width="1.7" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span class="ni-lbl">我的</span>
+    </div>
+  </nav>
+</div>
+
+<!-- sheet -->
+<div class="sheet-bg" id="sheetBg" onclick="bgClick(event)">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">
+      <span id="shTitle">添加持仓</span>
+      <button onclick="closeSheet()">取消</button>
+    </div>
+    <div class="sh-body">
+
+      <!-- 实时预览 -->
+      <div class="live-preview">
+        <div class="lp-item">
+          <div class="lp-label">持仓市值</div>
+          <div class="lp-val" id="lpMv">—</div>
+        </div>
+        <div class="lp-item">
+          <div class="lp-label">总成本</div>
+          <div class="lp-val" id="lpCost">—</div>
+        </div>
+        <div class="lp-item">
+          <div class="lp-label">盈亏金额</div>
+          <div class="lp-val" id="lpPnl">—</div>
+        </div>
+        <div class="lp-item">
+          <div class="lp-label">盈亏比例</div>
+          <div class="lp-val" id="lpPct">—</div>
+        </div>
+      </div>
+
+      <div class="prow">
+        <div class="pf"><label>股票代号 *</label>
+          <input type="text" id="eT" placeholder="AAPL" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" oninput="liveCalc()"></div>
+        <div class="pf"><label>股票名称</label>
+          <input type="text" id="eN" placeholder="苹果公司"></div>
+      </div>
+      <div class="prow">
+        <div class="pf"><label>持股数量 *</label>
+          <input type="number" id="eS" placeholder="10" step="1" min="1" inputmode="decimal" oninput="liveCalc()"></div>
+        <div class="pf"><label>买入均价 ($) *</label>
+          <input type="number" id="eC" placeholder="150.00" step="0.01" inputmode="decimal" oninput="liveCalc()"></div>
+      </div>
+      <div class="prow">
+        <div class="pf"><label>当前价格 ($) *</label>
+          <input type="number" id="eP" placeholder="175.00" step="0.01" inputmode="decimal" oninput="liveCalc()"></div>
+        <div class="pf"><label>今日涨跌 (%)</label>
+          <input type="number" id="eDC" placeholder="1.23" step="0.01" inputmode="decimal" oninput="liveCalc()"></div>
+      </div>
+      <div class="err-msg" id="errMsg">请填写所有必填项（代号、数量、买入价、当前价）</div>
+    </div>
+    <div class="sh-actions">
+      <button class="btn-ok" id="btnOk" onclick="saveStock()">确认添加</button>
+      <button class="btn-cl" onclick="closeSheet()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let acctTotal = 0, stocks = [], editIdx = -1, batLevel = 100;
+
+const f2 = n => n.toFixed(2);
+const fmtAbs = n => '$' + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const fmtTot = n => '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+/* clock */
+function tick(){
+  const now = new Date();
+  document.getElementById('sbTime').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+}
+tick(); setInterval(tick, 1000);
+
+/* battery */
+function updateBat(pct){
+  pct = Math.max(1, Math.min(100, pct)); batLevel = pct;
+  document.getElementById('batPct').textContent = pct;
+  const f = document.getElementById('batFill');
+  f.style.width = pct + '%';
+  f.style.background = pct <= 20 ? '#d0021b' : '#000';
+}
+updateBat(100);
+
+/* sparkline — deterministic per ticker so it doesn't re-randomise on every render */
+const sparkCache = {};
+function spark(ticker, dc, W, H){
+  const key = ticker + dc;
+  if(sparkCache[key]) return sparkCache[key];
+  let pts = [], y = H/2;
+  for(let i = 0; i < 20; i++){
+    const t = i/19;
+    const trend = dc >= 0 ? -t*H*0.35 : t*H*0.35;
+    y = Math.max(3, Math.min(H-3, y + (Math.random()-0.48)*5 + (trend - y*0.05)*0.12));
+    pts.push([i*(W/19), y]);
+  }
+  sparkCache[key] = 'M ' + pts.map(p => p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L ');
+  return sparkCache[key];
+}
+
+/* ── CORE: recalculate & update header from stocks[] + acctTotal ── */
+function calcTotal(){
+  let totalMv = 0, totalPnl = 0;
+  stocks.forEach(s => {
+    totalMv  += s.price * s.shares;
+    totalPnl += (s.price - s.cost) * s.shares;
+  });
+  const tot = acctTotal > 0 ? acctTotal : totalMv;
+  document.getElementById('totalAmt').textContent = fmtTot(tot);
+  const el = document.getElementById('dayRow');
+  if(stocks.length){
+    const base = acctTotal > 0 ? acctTotal : totalMv - totalPnl;
+    const pct  = base > 0 ? (totalPnl / base * 100) : 0;
+    el.className = 'day-row ' + (totalPnl >= 0 ? 'up' : 'dn');
+    el.textContent = (totalPnl >= 0 ? '+' : '') +
+      Math.abs(totalPnl).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') +
+      ' (' + (totalPnl >= 0 ? '+' : '') + pct.toFixed(2) + '%)';
+  } else { el.textContent = ''; el.className = 'day-row'; }
+}
+
+/* ── render list (only structural changes, not live-edit values) ── */
+function render(){
+  const el = document.getElementById('slist');
+  if(!stocks.length){
+    el.innerHTML = `<div class="empty">
+      <div style="margin-bottom:14px;">
+        <svg width="56" height="56" viewBox="0 0 52 52" fill="none">
+          <rect x="6" y="14" width="40" height="30" rx="4" stroke="#ccc" stroke-width="2" fill="none"/>
+          <path d="M6 22H46" stroke="#ccc" stroke-width="2"/>
+          <circle cx="38" cy="38" r="8" fill="#fff" stroke="#ccc" stroke-width="2"/>
+          <path d="M35 38H41M38 35V41" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="empty-txt">您没有持任何仓位</div>
+      <button class="srch-btn" onclick="openAdd()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="7" cy="7" r="5" stroke="#888" stroke-width="1.5"/>
+          <path d="M11 11L14.5 14.5" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>搜索代号
+      </button></div>`;
+    return;
+  }
+  el.innerHTML = '';
+  stocks.forEach((s, i) => {
+    const mv  = s.price * s.shares;
+    const pnl = mv - s.cost * s.shares;
+    const up  = s.dayChg >= 0, pup = pnl >= 0;
+    const col = up ? '#00b050' : '#d0021b';
+    const wrap = document.createElement('div');
+    wrap.className = 'row-wrap';
+    wrap.dataset.idx = i;
+    wrap.innerHTML = `
+      <div class="del-reveal" onclick="del(${i})"><span>删除</span></div>
+      <div class="srow" data-i="${i}">
+        <div class="sl">
+          <div class="sl-tick">${s.ticker}</div>
+          <div class="sl-info" id="info-${i}">${s.shares}股 均${fmtAbs(s.cost)}</div>
+          <div class="sl-pnl ${pup?'up':'dn'}" id="pnl-${i}">${pup?'+':''}${fmtAbs(pnl)}</div>
+        </div>
+        <div class="sc">
+          <svg width="76" height="32" viewBox="0 0 76 32" fill="none">
+            <path d="${spark(s.ticker, s.dayChg, 76, 32)}" stroke="${col}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="sr">
+          <div class="sr-price" id="price-${i}">${fmtAbs(s.price)}</div>
+          <div class="sr-chg ${up?'up':'dn'}" id="chg-${i}">${up?'+':''}${f2(s.dayChg)}%</div>
+          <div class="sr-mkt" id="mkt-${i}">${fmtAbs(mv)}</div>
+        </div>
+      </div>`;
+    el.appendChild(wrap);
+    bindSwipe(wrap, i);
+  });
+}
+
+/* update a single row's displayed numbers without re-rendering DOM */
+function updateRow(i){
+  const s = stocks[i];
+  if(!s) return;
+  const mv  = s.price * s.shares;
+  const pnl = mv - s.cost * s.shares;
+  const up  = s.dayChg >= 0, pup = pnl >= 0;
+  const infoEl  = document.getElementById('info-'+i);
+  const pnlEl   = document.getElementById('pnl-'+i);
+  const priceEl = document.getElementById('price-'+i);
+  const chgEl   = document.getElementById('chg-'+i);
+  const mktEl   = document.getElementById('mkt-'+i);
+  if(infoEl)  infoEl.textContent  = s.shares + '股 均' + fmtAbs(s.cost);
+  if(pnlEl){  pnlEl.textContent   = (pup?'+':'') + fmtAbs(pnl); pnlEl.className = 'sl-pnl '+(pup?'up':'dn'); }
+  if(priceEl) priceEl.textContent = fmtAbs(s.price);
+  if(chgEl){  chgEl.textContent   = (up?'+':'') + f2(s.dayChg)+'%'; chgEl.className = 'sr-chg '+(up?'up':'dn'); }
+  if(mktEl)   mktEl.textContent   = fmtAbs(mv);
+}
+
+/* ── live preview in sheet ── */
+function liveCalc(){
+  const s  = parseFloat(document.getElementById('eS').value) || 0;
+  const c  = parseFloat(document.getElementById('eC').value) || 0;
+  const p  = parseFloat(document.getElementById('eP').value) || 0;
+  const dc = parseFloat(document.getElementById('eDC').value) || 0;
+  const mv   = p * s;
+  const cost = c * s;
+  const pnl  = mv - cost;
+  const pct  = cost > 0 ? (pnl / cost * 100) : 0;
+  const pup  = pnl >= 0;
+
+  document.getElementById('lpMv').textContent   = mv   > 0 ? fmtAbs(mv)   : '—';
+  document.getElementById('lpCost').textContent = cost > 0 ? fmtAbs(cost) : '—';
+
+  const lpPnl = document.getElementById('lpPnl');
+  const lpPct = document.getElementById('lpPct');
+  if(mv > 0 && cost > 0){
+    lpPnl.textContent  = (pup?'+':'') + fmtAbs(pnl);
+    lpPnl.className    = 'lp-val ' + (pup?'up':'dn');
+    lpPct.textContent  = (pup?'+':'') + pct.toFixed(2) + '%';
+    lpPct.className    = 'lp-val ' + (pup?'up':'dn');
+  } else {
+    lpPnl.textContent = '—'; lpPnl.className = 'lp-val';
+    lpPct.textContent = '—'; lpPct.className = 'lp-val';
+  }
+
+  /* also preview impact on total */
+  if(editIdx >= 0){
+    /* temporarily swap, recalc header, restore */
+    const orig = {...stocks[editIdx]};
+    stocks[editIdx] = {...orig, shares:s||orig.shares, cost:c||orig.cost, price:p||orig.price, dayChg:dc};
+    calcTotal();
+    stocks[editIdx] = orig;
+    calcTotal(); /* restore */
+    stocks[editIdx] = {...orig, shares:s||orig.shares, cost:c||orig.cost, price:p||orig.price, dayChg:dc};
+    calcTotal();
+    stocks[editIdx] = orig; calcTotal();
+  }
+}
+
+/* swipe */
+function bindSwipe(rowEl, idx){
+  const srow = rowEl.querySelector('.srow');
+  let sx=0, sy=0, drag=false, opened=false;
+  function closeOthers(){ document.querySelectorAll('.srow').forEach(r=>{ if(r!==srow){r.style.transition='transform 0.25s';r.style.transform='translateX(0)';} }); }
+  function dn(e){ closeOthers(); const p=e.touches?e.touches[0]:e; sx=p.clientX;sy=p.clientY;drag=false;srow.style.transition='none'; }
+  function mv(e){ const p=e.touches?e.touches[0]:e; const dx=p.clientX-sx,dy=p.clientY-sy; if(!drag&&Math.abs(dx)>6&&Math.abs(dx)>Math.abs(dy))drag=true; if(!drag)return; e.preventDefault(); srow.style.transform=`translateX(${Math.max(-80,Math.min(0,dx+(opened?-80:0)))}px)`; }
+  function up(e){ srow.style.transition='transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94)'; const p=e.changedTouches?e.changedTouches[0]:e; const dx=p.clientX-sx; if(!drag){ if(opened){srow.style.transform='translateX(0)';opened=false;}else openEdit(idx); return; } const tot=dx+(opened?-80:0); if(tot<-50){srow.style.transform='translateX(-80px)';opened=true;}else{srow.style.transform='translateX(0)';opened=false;} }
+  srow.addEventListener('touchstart',dn,{passive:true});
+  srow.addEventListener('touchmove',mv,{passive:false});
+  srow.addEventListener('touchend',up);
+  srow.addEventListener('mousedown',dn);
+  window.addEventListener('mousemove',mv);
+  window.addEventListener('mouseup',up);
+}
+
+/* account edit */
+function toggleAE(){
+  const p=document.getElementById('aePanel');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block'){
+    document.getElementById('aeAmt').value=acctTotal||'';
+    document.getElementById('aeNum').value=document.getElementById('acctNum').textContent;
+    document.getElementById('aeBat').value=batLevel;
+  }
+}
+function saveAE(){
+  acctTotal=parseFloat(document.getElementById('aeAmt').value)||0;
+  const num=document.getElementById('aeNum').value.trim();
+  if(num) document.getElementById('acctNum').textContent=num;
+  const bat=parseInt(document.getElementById('aeBat').value);
+  if(!isNaN(bat)) updateBat(bat);
+  document.getElementById('aePanel').style.display='none';
+  calcTotal();
+}
+
+/* sheet open/close */
+function resetPreview(){
+  ['lpMv','lpCost','lpPnl','lpPct'].forEach(id=>{
+    const el=document.getElementById(id); el.textContent='—'; el.className='lp-val';
+  });
+}
+function openAdd(){
+  editIdx=-1;
+  document.getElementById('shTitle').textContent='添加持仓';
+  document.getElementById('btnOk').textContent='确认添加';
+  ['eT','eN','eS','eC','eP','eDC'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('errMsg').style.display='none';
+  resetPreview();
+  document.getElementById('sheetBg').classList.add('show');
+}
+function openEdit(i){
+  editIdx=i; const s=stocks[i];
+  document.getElementById('shTitle').textContent='编辑持仓 · '+s.ticker;
+  document.getElementById('btnOk').textContent='保存修改';
+  document.getElementById('eT').value=s.ticker;
+  document.getElementById('eN').value=s.name;
+  document.getElementById('eS').value=s.shares;
+  document.getElementById('eC').value=s.cost;
+  document.getElementById('eP').value=s.price;
+  document.getElementById('eDC').value=s.dayChg;
+  document.getElementById('errMsg').style.display='none';
+  document.getElementById('sheetBg').classList.add('show');
+  liveCalc();
+}
+function closeSheet(){
+  document.getElementById('sheetBg').classList.remove('show');
+  document.querySelectorAll('.srow').forEach(r=>{r.style.transition='transform 0.25s';r.style.transform='translateX(0)';});
+}
+function bgClick(e){ if(e.target===document.getElementById('sheetBg')) closeSheet(); }
+
+/* save */
+function saveStock(){
+  const t  = document.getElementById('eT').value.trim().toUpperCase();
+  const n  = document.getElementById('eN').value.trim();
+  const s  = parseFloat(document.getElementById('eS').value);
+  const c  = parseFloat(document.getElementById('eC').value);
+  const p  = parseFloat(document.getElementById('eP').value);
+  const dc = parseFloat(document.getElementById('eDC').value)||0;
+  const err= document.getElementById('errMsg');
+  if(!t||!s||s<=0||!c||c<=0||!p||p<=0){ err.style.display='block'; return; }
+  err.style.display='none';
+  const obj={ticker:t, name:n||t, shares:s, cost:c, price:p, dayChg:dc};
+  if(editIdx>=0){
+    stocks[editIdx]=obj;
+    closeSheet(); updateRow(editIdx); calcTotal();
+  } else {
+    stocks.push(obj);
+    closeSheet(); render(); calcTotal();
+  }
+}
+
+function del(i){ stocks.splice(i,1); render(); calcTotal(); }
+
+/* init */
+stocks=[
+  {ticker:'AAPL', name:'苹果公司', shares:50,  cost:165.20, price:189.84, dayChg:1.23},
+  {ticker:'NVDA', name:'英伟达',   shares:10,  cost:520.00, price:875.39, dayChg:2.87},
+  {ticker:'TSLA', name:'特斯拉',   shares:20,  cost:210.00, price:177.58, dayChg:-3.12},
+  {ticker:'MSFT', name:'微软',     shares:15,  cost:380.00, price:415.20, dayChg:0.56},
+];
+acctTotal=98432.50;
+render(); calcTotal();
+</script>
+</body>
+</html>
