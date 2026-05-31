@@ -176,7 +176,7 @@ html,body{height:100%;width:100%;background:#fff;font-family:'Inter',-apple-syst
   <div id="aePanel" style="display:none">
     <div class="ae-panel">
       <div class="ae-grid">
-        <div class="ae-col"><label>账户总资金 ($)</label><input type="number" id="aeAmt" step="100" inputmode="decimal"></div>
+        <div class="ae-col"><label>可用现金 ($)</label><input type="number" id="aeAmt" step="100" inputmode="decimal" placeholder="0.00"></div>
         <div class="ae-col"><label>账号</label><input type="text" id="aeNum"></div>
       </div>
       <div class="ae-grid">
@@ -324,20 +324,21 @@ function spark(ticker, dc, W, H){
 
 /* ── calcTotal: always recompute from stocks[] + acctTotal ── */
 function calcTotal(){
+  /* acctTotal now represents 可用现金 (cash). Total = cash + sum(market values). */
   let totalMv = 0, totalCost = 0;
   stocks.forEach(s => {
     totalMv   += s.price * s.shares;
     totalCost += s.cost  * s.shares;
   });
-  const totalPnl = totalMv - totalCost;
-  const tot = acctTotal > 0 ? acctTotal : totalMv;
+  const totalPnl  = totalMv - totalCost;
+  const cash      = acctTotal;
+  const grandTot  = totalMv + cash;
 
-  document.getElementById('totalAmt').textContent = fmtTot(tot);
+  document.getElementById('totalAmt').textContent = fmtTot(grandTot);
 
   const el = document.getElementById('dayRow');
   if(stocks.length){
-    const base = acctTotal > 0 ? acctTotal : totalCost;
-    const pct  = base > 0 ? (totalPnl / base * 100) : 0;
+    const pct = totalCost > 0 ? (totalPnl / totalCost * 100) : 0;
     el.className = 'day-row ' + (totalPnl >= 0 ? 'up' : 'dn');
     el.textContent =
       (totalPnl >= 0 ? '+' : '-') +
@@ -396,17 +397,16 @@ function liveCalc(){
     tempStocks.push({ shares:s, cost:c, price:p, dayChg:dc });
   }
 
-  /* recompute header from tempStocks */
+  /* recompute header from tempStocks: total = cash + sum(market values) */
   let tMv = 0, tCost = 0;
   tempStocks.forEach(st => { tMv += st.price * st.shares; tCost += st.cost * st.shares; });
   const tPnl = tMv - tCost;
-  const tot  = acctTotal > 0 ? acctTotal : tMv;
+  const tot  = tMv + acctTotal;
 
   document.getElementById('totalAmt').textContent = fmtTot(tot);
   const hEl = document.getElementById('dayRow');
   if(tempStocks.length){
-    const base = acctTotal > 0 ? acctTotal : tCost;
-    const hPct = base > 0 ? (tPnl / base * 100) : 0;
+    const hPct = tCost > 0 ? (tPnl / tCost * 100) : 0;
     hEl.className = 'day-row ' + (tPnl >= 0 ? 'up' : 'dn');
     hEl.textContent =
       (tPnl >= 0 ? '+' : '-') +
@@ -616,7 +616,7 @@ stocks=[
   {ticker:'TSLA', name:'特斯拉',   shares:20,  cost:210.00, price:177.58, dayChg:-3.12},
   {ticker:'MSFT', name:'微软',     shares:15,  cost:380.00, price:415.20, dayChg:0.56},
 ];
-acctTotal=98432.50;
+acctTotal=2500.00; /* 可用现金 */
 render(); calcTotal();
 </script>
 </body>
